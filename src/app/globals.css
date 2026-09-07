@@ -1,0 +1,165 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   NEXORA — design tokens
+   Monochrome base + a single metallic electric blue accent.
+   See docs/DESIGN_SYSTEM.md §2 and §3.
+   The site is pure white in all conditions: there is deliberately no dark mode.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-nx-white: #ffffff;
+  --color-nx-black: #000000;
+  --color-nx-gray-900: #0a0a0a;
+  --color-nx-gray-600: #6b6b6b;
+  --color-nx-gray-400: #a3a3a3;
+  --color-nx-gray-200: #e5e5e5;
+  --color-nx-gray-100: #f5f5f5;
+
+  /* Accent. Colder and deeper than Apple's #0A84FF so Nexora reads as its own
+     brand rather than an Apple echo. */
+  --color-nx-blue: #0b5fff;
+  --color-nx-blue-deep: #0038b8;
+  --color-nx-blue-light: #7fb2ff;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  /* Logotype only — never body copy. */
+  --font-wordmark: var(--font-space-grotesk), var(--font-inter), sans-serif;
+
+  /* Fluid type scale (§3) */
+  --text-display-xl: clamp(3.5rem, 9vw, 8.75rem);
+  --text-display-l: clamp(2.5rem, 6vw, 5.5rem);
+  --text-display-m: clamp(1.75rem, 3.2vw, 3rem);
+  --text-body-l: clamp(1.0625rem, 1.4vw, 1.25rem);
+  --text-body-m: clamp(0.9375rem, 1vw, 1rem);
+  --text-mono-label: clamp(0.6875rem, 0.85vw, 0.8125rem);
+
+  --ease-nx: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-nx-nav: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Metallic accent — a gradient, not a flat fill. The sheen is what reads as
+   "metal"; a single hex reads as generic UI blue. */
+@utility nx-metal {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-nx-blue-deep) 0%,
+    var(--color-nx-blue) 45%,
+    var(--color-nx-blue-light) 70%,
+    var(--color-nx-blue) 100%
+  );
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  transition: background-position 700ms var(--ease-nx);
+}
+
+@utility nx-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-nx-gray-400);
+}
+
+/* The page ground is a very pale cast of the selected colourway, not pure white,
+   so the tinted panels (bubbles, navbar, footer, §04) no longer sit as bright
+   patches on a white sheet.
+
+   The default is declared here rather than only being set by FinishProvider on
+   mount: relying on the effect alone meant the first paint was pure white and
+   then transitioned into the tint, a visible flash on every page load. This
+   value must stay in step with FINISHES[0].tint in lib/finishes.ts. */
+:root {
+  --nx-page-tint: #f1f5f9;
+}
+
+html {
+  background: var(--nx-page-tint);
+  transition: background-color 700ms var(--ease-nx);
+  color: var(--color-nx-black);
+  -webkit-font-smoothing: antialiased;
+  /* Native smooth scrolling, now that Lenis no longer owns the scroll
+     position. Anchor jumps ease instead of snapping, and nothing can pull the
+     page back afterwards. */
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--nx-page-tint);
+  font-family: var(--font-sans);
+  transition: background-color 700ms var(--ease-nx);
+}
+
+::selection {
+  background: var(--color-nx-blue);
+  color: var(--color-nx-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-nx-blue);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion gating.
+   IMPORTANT (docs/DESIGN_SYSTEM.md §11): this development machine has Windows
+   animations disabled system-wide, so every local browser reports
+   prefers-reduced-motion: reduce. Gating purely on the media query would make
+   the site look frozen and broken during development.
+   Instead motion is gated on a data attribute that <MotionProvider> sets, which
+   honours the OS preference in production but can be forced on locally with
+   ?motion=on (persisted) for visual verification.
+--------------------------------------------------------------------------- */
+[data-motion="off"] .nx-marquee-track {
+  animation: none !important;
+}
+
+@keyframes nx-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.nx-marquee-track {
+  animation: nx-marquee var(--nx-marquee-duration, 60s) linear infinite;
+  will-change: transform;
+}
+
+.nx-marquee:hover .nx-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Hero satellites: a slow vertical drift so the composition breathes at rest.
+   Each instance offsets its own delay, so they never move in lockstep. */
+@keyframes nx-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
+  }
+}
+
+.nx-float {
+  animation: nx-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+[data-motion="off"] .nx-float {
+  animation: none !important;
+}
+
+/* Hairline that draws itself in as a section enters (§8) */
+@keyframes nx-rule-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
