@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Info } from "lucide-react";
 import { useCart } from "@/components/cart/cart-provider";
 import { useFinish } from "@/components/finish-provider";
 import { formatPrice, SHIPPING_COST } from "@/lib/cart";
@@ -15,7 +15,18 @@ import { formatPrice, SHIPPING_COST } from "@/lib/cart";
  * The cart is sent as ids and quantities only — the server prices it. The
  * summary shown here is the client's own resolution of the same catalogue, so
  * the two agree without the browser being authoritative about money.
+ *
+ * On the GitHub Pages build (NEXT_PUBLIC_STATIC_EXPORT — see next.config.ts),
+ * `/api/orders` does not exist: there is no server to call. This does NOT
+ * silently pretend an order went through, and it does NOT collect a name,
+ * e-mail and address into a form with nowhere to send them — both would be
+ * dishonest in different ways. Instead the cart summary (genuinely real —
+ * resolved from the same catalogue as everywhere else) is shown read-only
+ * beside a plain explanation of why checkout stops here on this build. The
+ * cart itself — add, remove, change quantity — needs no server at all and
+ * keeps working normally right up to this page.
  */
+const STATIC_EXPORT = process.env.NEXT_PUBLIC_STATIC_EXPORT === "true";
 const FIELDS = [
   { name: "firstName", label: "Prénom", type: "text", autoComplete: "given-name", half: true },
   { name: "lastName", label: "Nom", type: "text", autoComplete: "family-name", half: true },
@@ -117,6 +128,90 @@ export function CheckoutForm() {
         >
           Parcourir le catalogue
         </Link>
+      </div>
+    );
+  }
+
+  if (STATIC_EXPORT) {
+    return (
+      <div className="grid gap-x-16 gap-y-12 lg:grid-cols-[1.15fr_0.85fr]">
+        <div>
+          <div className="flex gap-4 rounded-[1.5rem] border border-nx-blue/30 bg-nx-blue/5 p-6">
+            <Info size={18} strokeWidth={1.8} className="mt-0.5 shrink-0 text-nx-blue" />
+            <div>
+              <p className="nx-eyebrow mb-2 text-nx-blue">Démonstration statique</p>
+              <p className="text-[0.9375rem] leading-[1.7] text-nx-black">
+                Cette page est hébergée sur GitHub Pages, qui ne peut exécuter aucun code —
+                seulement servir des fichiers déjà prêts. La validation de commande, le calcul du
+                prix côté serveur et l&apos;envoi de la notification par e-mail ont besoin d&apos;un
+                serveur, donc ne peuvent pas fonctionner ici.
+              </p>
+              <p className="mt-3 text-[0.9375rem] leading-[1.7] text-nx-black/70">
+                Le panier ci-contre, lui, est bien réel : il ne dépend d&apos;aucun serveur.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/catalog"
+            className="mt-8 inline-flex items-center gap-2 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-nx-black/55 transition-colors hover:text-nx-black"
+          >
+            <ArrowLeft size={13} strokeWidth={1.8} />
+            Continuer mes achats
+          </Link>
+        </div>
+
+        <div>
+          <div className="rounded-[2rem] p-7 lg:sticky lg:top-28" style={{ backgroundColor: finish.wash }}>
+            <p className="nx-eyebrow mb-6 text-nx-black/45">Récapitulatif</p>
+
+            <ul className="space-y-4">
+              {resolved.map((line) => (
+                <li key={line.key} className="flex items-center gap-3">
+                  <div
+                    className="relative size-14 shrink-0 overflow-hidden rounded-xl"
+                    style={{ backgroundColor: finish.tint }}
+                  >
+                    {line.image && (
+                      <Image src={line.image} alt="" fill sizes="56px" className="object-contain p-1" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[0.875rem] font-medium text-nx-black">{line.name}</p>
+                    <p className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-nx-black/50">
+                      {line.quantity} × {formatPrice(line.unitPrice)}
+                      {line.variantLabel ? ` · ${line.variantLabel}` : ""}
+                    </p>
+                  </div>
+                  <p className="font-mono text-[0.75rem] tabular-nums text-nx-black">
+                    {formatPrice(line.lineTotal)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            <dl
+              className="mt-7 space-y-2 border-t pt-5 font-mono text-[0.75rem] uppercase tracking-[0.12em]"
+              style={{ borderColor: `${finish.swatch}33` }}
+            >
+              <div className="flex justify-between text-nx-black/60">
+                <dt>Sous-total</dt>
+                <dd className="tabular-nums">{formatPrice(subtotal)}</dd>
+              </div>
+              <div className="flex justify-between text-nx-black/60">
+                <dt>Livraison</dt>
+                <dd>Offerte</dd>
+              </div>
+              <div
+                className="flex justify-between border-t pt-3 text-nx-black"
+                style={{ borderColor: `${finish.swatch}33` }}
+              >
+                <dt className="font-medium">Total</dt>
+                <dd className="text-[1rem] tabular-nums">{formatPrice(total)}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
       </div>
     );
   }

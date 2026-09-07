@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BASE_PATH } from "@/lib/base-path";
 
 /**
  * Loads the teardown frame sequence for the scrubbed hero.
@@ -69,7 +70,10 @@ export function useFrameSequence(
       const index = order[cursor++];
       const img = new Image();
       img.decoding = "async";
-      img.src = `/frames/${variant}/frame_${String(index + 1).padStart(4, "0")}.webp`;
+      // A raw DOM Image, set outside Next's control — unlike next/image or
+      // <Link>, nothing prefixes this automatically, so BASE_PATH is applied
+      // by hand. It's "" everywhere except the GitHub Pages build.
+      img.src = `${BASE_PATH}/frames/${variant}/frame_${String(index + 1).padStart(4, "0")}.webp`;
 
       const done = () => {
         if (cancelled) return;
