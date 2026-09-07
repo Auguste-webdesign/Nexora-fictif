@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/app-image";
 import { Reveal } from "@/components/ui/reveal";
 import { TechBackdrop } from "@/components/background/tech-backdrop";
 import { useFinish } from "@/components/finish-provider";

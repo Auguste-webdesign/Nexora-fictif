@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/app-image";
 import { ArrowRight } from "lucide-react";
 import { useFrameSequence } from "@/hooks/use-frame-sequence";
 import { useMotionEnabled } from "@/components/motion-provider";

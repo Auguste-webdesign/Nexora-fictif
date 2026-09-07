@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/app-image";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, MousePointerClick } from "lucide-react";
 import { Reveal, SectionEyebrow } from "@/components/ui/reveal";

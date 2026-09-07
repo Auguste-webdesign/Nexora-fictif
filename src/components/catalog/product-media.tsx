@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/ui/app-image";
 import { ProductGlyph } from "./product-glyph";
 import type { Product } from "@/lib/products";
 
